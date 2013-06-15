@@ -22,34 +22,36 @@ var loadIntoWindow = function(window) {
                    .getDefaultBranch("extensions.dimmer.");
   defBranch.setIntPref('opacity', 4);
   opacity = prefBranch.getIntPref('opacity');
+  window.dump('dimmer: opacity is ' + opacity);
   
   makeDimmer = function(opacity){
+      window.dump('dimmer: callback opacity is ' + opacity);
       return function(event) {
-      var doc = event.originalTarget;
-      if (doc.toString().indexOf('HTMLDocument') !== -1) { 
-         if (doc.defaultView.frameElement){
-            doc = doc.defaultView.top.document;
-            window.dump(doc.defaultView.location + '\n');return;
-         }
-         (function() {
-            if (doc.getElementById("dimmerFFAddOn")) {
-               doc.getElementById("dimmerFFAddOn").style.opacity = opacity / 10;
-               return;
+         var doc = event.originalTarget;
+         if (doc.toString().indexOf('HTMLDocument') !== -1) { 
+            if (doc.defaultView.frameElement){
+              doc = doc.defaultView.top.document;
+              window.dump(doc.defaultView.location + '\n');return;
             }
-            var newDiv = doc.createElement('div');
-            newDiv.id="dimmerFFAddOn";
-            newDiv.style.width = '100%';
-            newDiv.style.height = '100%';
-            newDiv.style.position = 'fixed';
-            newDiv.style.top = 0;
-            newDiv.style.left = 0;
-            newDiv.style.zIndex = 10000;
-            newDiv.style.backgroundColor = 'black';
-            newDiv.style.opacity = opacity/10;
-            newDiv.style.pointerEvents = 'none';
-            doc.body.appendChild(newDiv);
-         }());
-      }
+            (function() {
+               if (doc.getElementById("dimmerFFAddOn")) {
+                  doc.getElementById("dimmerFFAddOn").style.opacity = opacity / 10;
+                  return;
+               }
+               var newDiv = doc.createElement('div');
+               newDiv.id="dimmerFFAddOn";
+               newDiv.style.width = '100%';
+               newDiv.style.height = '100%';
+               newDiv.style.position = 'fixed';
+               newDiv.style.top = 0;
+               newDiv.style.left = 0;
+               newDiv.style.zIndex = 10000;
+               newDiv.style.backgroundColor = 'black';
+               newDiv.style.opacity = opacity/10;
+               newDiv.style.pointerEvents = 'none';
+               doc.body.appendChild(newDiv);
+           }());
+        }
      };
   };
 
@@ -65,9 +67,9 @@ var loadIntoWindow = function(window) {
                  opacity = 4;
                  prefBranch.setIntPref('opacity', 4);
               }
-              window.gBrowser.removeEventListener("load", loadListener, true);
+              window.gBrowser.removeEventListener("DOMContentLoaded", loadListener, true);
               loadListener = makeDimmer(opacity);
-              window.gBrowser.addEventListener("load", loadListener, true);
+              window.gBrowser.addEventListener("DOMContentLoaded", loadListener, true);
 
            break;
         }
