@@ -27,9 +27,14 @@ var loadIntoWindow = function(window) {
       return function(event) {
       var doc = event.originalTarget;
       if (doc.toString().indexOf('HTMLDocument') !== -1) { 
-         if (doc.defaultView.frameElement){return;}
+         if (doc.defaultView.frameElement){
+            doc = doc.defaultView.top.document;
+            window.dump(doc.defaultView.location + '\n');return;
+         }
          (function() {
+            if(doc.getElementById("dimmerFFAddOn")){return;}
             var newDiv = doc.createElement('div');
+            newDiv.id="dimmerFFAddOn";
             newDiv.style.width = '100%';
             newDiv.style.height = '100%';
             newDiv.style.position = 'fixed';
@@ -46,7 +51,7 @@ var loadIntoWindow = function(window) {
   };
 
   loadListener = makeDimmer(opacity);
-  window.gBrowser.addEventListener("load", loadListener, true);
+  window.gBrowser.addEventListener("DOMContentLoaded", loadListener, true);
 
   prefObserver = {
      observe: function(aSubject, aTopic, aData) {
