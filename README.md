@@ -1,0 +1,7 @@
+Dimmer
+========
+
+Dimmer for firefox
+
+
+
