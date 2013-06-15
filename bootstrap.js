@@ -32,7 +32,10 @@ var loadIntoWindow = function(window) {
             window.dump(doc.defaultView.location + '\n');return;
          }
          (function() {
-            if(doc.getElementById("dimmerFFAddOn")){return;}
+            if (doc.getElementById("dimmerFFAddOn")) {
+               doc.getElementById("dimmerFFAddOn").style.opacity = opacity / 10;
+               return;
+            }
             var newDiv = doc.createElement('div');
             newDiv.id="dimmerFFAddOn";
             newDiv.style.width = '100%';
