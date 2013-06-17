@@ -1,16 +1,22 @@
-/*global Components, APP_SHUTDOWN */
+/*global Components, APP_SHUTDOWN, testObj */
 "use strict";
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var prefObserver;
 
+var modulePath = 'chrome://dimmer/content/modules/testModule.js';
+Components.utils.import(modulePath);
+
 var loadIntoWindow = function(window) {
   var anchor, doc, opacity, prefBranch, defBranch, makeDimmer, 
       loadListener;
+  window.dump('dimmer: testObj ' + testObj.a + '\n');
+
   anchor = window.document.getElementById("tabbrowser-tabs");
   if (!anchor) {
     window.dump('dimmer: window ' + window.id +
-                ' ' + window.title + ' has no browser tabs to anchor to' + '\n');
+                ' ' + window.title + 
+                ' has no browser tabs to anchor to' + '\n');
     return;
   }
   window.dump('dimmer: loading\n');
@@ -22,10 +28,9 @@ var loadIntoWindow = function(window) {
                    .getDefaultBranch("extensions.dimmer.");
   defBranch.setIntPref('opacity', 4);
   opacity = prefBranch.getIntPref('opacity');
-  window.dump('dimmer: opacity is ' + opacity);
   
   makeDimmer = function(opacity){
-      window.dump('dimmer: callback opacity is ' + opacity);
+      window.dump('dimmer: opacity is ' + opacity + '\n');
       return function(event) {
          var doc = event.originalTarget;
          if (doc.toString().indexOf('HTMLDocument') !== -1) { 
