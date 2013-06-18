@@ -1,91 +1,25 @@
-/*global Components, APP_SHUTDOWN, testObj */
+/*global Components, APP_SHUTDOWN, makeDimmer, makeObserver, prefBranch */
 "use strict";
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 var prefObserver;
 
-var modulePath = 'chrome://dimmer/content/modules/testModule.js';
-Components.utils.import(modulePath);
+var modulePath = 'chrome://dimmer/content/modules/';
 
-var loadIntoWindow = function(window) {
-  var anchor, doc, opacity, prefBranch, defBranch, makeDimmer, 
-      loadListener;
-  window.dump('dimmer: testObj ' + testObj.a + '\n');
-
+function loadIntoWindow(window) {
+  var anchor, dimmerListener;
+  loadIntoWindow.window = window;
   anchor = window.document.getElementById("tabbrowser-tabs");
-  if (!anchor) {
-    window.dump('dimmer: window ' + window.id +
-                ' ' + window.title + 
-                ' has no browser tabs to anchor to' + '\n');
-    return;
-  }
-  window.dump('dimmer: loading\n');
-  prefBranch = Components.classes["@mozilla.org/preferences-service;1"]
-                   .getService(Components.interfaces.nsIPrefService)
-                   .getBranch("extensions.dimmer.");
-  defBranch = Components.classes["@mozilla.org/preferences-service;1"]
-                   .getService(Components.interfaces.nsIPrefService)
-                   .getDefaultBranch("extensions.dimmer.");
-  defBranch.setIntPref('opacity', 4);
-  opacity = prefBranch.getIntPref('opacity');
-  
-  makeDimmer = function(opacity){
-      window.dump('dimmer: opacity is ' + opacity + '\n');
-      return function(event) {
-         var doc = event.originalTarget;
-         if (doc.toString().indexOf('HTMLDocument') !== -1) { 
-            if (doc.defaultView.frameElement){
-              doc = doc.defaultView.top.document;
-              window.dump(doc.defaultView.location + '\n');return;
-            }
-            (function() {
-               if (doc.getElementById("dimmerFFAddOn")) {
-                  doc.getElementById("dimmerFFAddOn").style.opacity = opacity / 10;
-                  return;
-               }
-               var newDiv = doc.createElement('div');
-               newDiv.id="dimmerFFAddOn";
-               newDiv.style.width = '100%';
-               newDiv.style.height = '100%';
-               newDiv.style.position = 'fixed';
-               newDiv.style.top = 0;
-               newDiv.style.left = 0;
-               newDiv.style.zIndex = 10000;
-               newDiv.style.backgroundColor = 'black';
-               newDiv.style.opacity = opacity/10;
-               newDiv.style.pointerEvents = 'none';
-               doc.body.appendChild(newDiv);
-           }());
-        }
-     };
-  };
+  if (!anchor) { return; }
+  Components.utils.import(modulePath + 'makeDimmer.js');
+  Components.utils.import(modulePath + 'prefObserver.js');
+  dimmerListener = makeDimmer(prefBranch.getIntPref('opacity'), window);
 
-  loadListener = makeDimmer(opacity);
-  window.gBrowser.addEventListener("DOMContentLoaded", loadListener, true);
-
-  prefObserver = {
-     observe: function(aSubject, aTopic, aData) {
-        switch (aData) {
-           case "opacity":
-              opacity = prefBranch.getIntPref('opacity');
-              if (opacity < 0 || opacity > 10) {
-                 opacity = 4;
-                 prefBranch.setIntPref('opacity', 4);
-              }
-              window.gBrowser.removeEventListener("DOMContentLoaded", loadListener, true);
-              loadListener = makeDimmer(opacity);
-              window.gBrowser.addEventListener("DOMContentLoaded", loadListener, true);
-
-           break;
-        }
-     },
-     unregister: function() {
-        prefBranch.removeObserver("", prefObserver);
-     }
-  };
-
-  prefBranch.addObserver("", prefObserver, false);
-};
+  window.dump('dimmer: loading listener\n');
+  window.gBrowser.addEventListener("DOMContentLoaded", dimmerListener, true);
+  prefBranch.addObserver('', makeObserver(window, makeDimmer), false);
+  window.dump('dimmer: loaded listener\n');
+}
 
 function unloadFromWindow(window) {
   if (!window) {
