@@ -2,31 +2,32 @@
 "use strict";
 var Cc = Components.classes;
 var Ci = Components.interfaces;
-var prefObserver;
 
 var modulePath = 'chrome://dimmer/content/modules/';
 
 function loadIntoWindow(window) {
-  var anchor, dimmerListener;
-  loadIntoWindow.window = window;
-  anchor = window.document.getElementById("tabbrowser-tabs");
-  if (!anchor) { return; }
+  if (!window.document.getElementById("tabbrowser-tabs")) { return; }
   Components.utils.import(modulePath + 'makeDimmer.js');
   Components.utils.import(modulePath + 'prefObserver.js');
-  dimmerListener = makeDimmer(prefBranch.getIntPref('opacity'), window);
+  window.dimmerListener = makeDimmer(prefBranch.getIntPref('opacity'), window);
 
   window.dump('dimmer: loading listener\n');
-  window.gBrowser.addEventListener("DOMContentLoaded", dimmerListener, true);
-  prefBranch.addObserver('', makeObserver(window, makeDimmer), false);
+  window.gBrowser
+     .addEventListener("DOMContentLoaded", window.dimmerListener, true);
+  window.dimmerPrefObserver = makeObserver(window, makeDimmer);
+  prefBranch.addObserver('', window.dimmerPrefObserver, false);
   window.dump('dimmer: loaded listener\n');
 }
 
 function unloadFromWindow(window) {
   if (!window) {
-    window.dump('no window?!' + '\n');
+    window.dump('dimmer: window disappeared\n');
     return;
   }
-  prefObserver.unregister();
+  window.dimmerPrefObserver.unregister();
+  window.gBrowser.removeEventListener("DOMContentLoaded",
+       window.dimmerListener, true);
+  window.dump('dimmer: unloaded\n');
 }
 
 /*
