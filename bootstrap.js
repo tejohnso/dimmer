@@ -7,8 +7,6 @@ var modulePath = 'chrome://dimmer/content/modules/';
 
 function loadIntoWindow(window) {
   if (!window.document.getElementById("tabbrowser-tabs")) { return; }
-  Components.utils.import(modulePath + 'makeDimmer.js');
-  Components.utils.import(modulePath + 'prefObserver.js');
   window.dimmerListener = makeDimmer(prefBranch.getIntPref('opacity'), window);
 
   window.dump('dimmer: loading listener\n');
@@ -51,7 +49,9 @@ var windowListener = {
 function startup(aData, aReason) {
    var wm, enumerator, win;
    wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
-
+   Components.utils.import(modulePath + 'makeDimmer.js');
+   Components.utils.import(modulePath + 'prefObserver.js');
+   
   // Load into any existing windows
   enumerator = wm.getEnumerator("navigator:browser");
   while (enumerator.hasMoreElements()) {
@@ -79,6 +79,8 @@ function shutdown(aData, aReason) {
     win.dump('unloading from window' + '\n');
     unloadFromWindow(win);
   }
+   Components.utils.unload(modulePath + 'makeDimmer.js');
+   Components.utils.unload(modulePath + 'prefObserver.js');
 }
 
 function install(aData, aReason) { }

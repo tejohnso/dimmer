@@ -27,11 +27,11 @@ function makeObserver(window,makeDimmer) {
                         }
                         window.gBrowser
                         .removeEventListener("DOMContentLoaded",
-                        dimmerListener, true);
-                        dimmerListener = makeDimmer(opacity);
+                        window.dimmerListener, true);
+                        window.dimmerListener = makeDimmer(opacity);
                         window.gBrowser
                         .addEventListener("DOMContentLoaded",
-                        dimmerListener, true);
+                        window.dimmerListener, true);
                         window.dump('dimmer: opacity ' + opacity + '\n');
                      break;
                   }
