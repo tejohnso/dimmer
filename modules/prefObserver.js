@@ -14,7 +14,7 @@ var defBranch = Components.
                 .getDefaultBranch("extensions.dimmer.");
 
 defBranch.setIntPref('opacity', 4);
-function makeObserver(window,makeDimmer) {
+function makeObserver(window, makeDimmer) {
    var prefObserver = {
       observe: function(aSubject, aTopic, aData) {
                   var opacity, dimmerListener;

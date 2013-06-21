@@ -1,4 +1,5 @@
-/*global Components, APP_SHUTDOWN, makeDimmer, makeObserver, prefBranch */
+/*global Components, APP_SHUTDOWN, makeDimmer, makeObserver,
+  prefBranch, makeDimmerMenuNoDim */
 "use strict";
 var Cc = Components.classes;
 var Ci = Components.interfaces;
@@ -7,6 +8,7 @@ var modulePath = 'chrome://dimmer/content/modules/';
 
 function loadIntoWindow(window) {
   if (!window.document.getElementById("tabbrowser-tabs")) { return; }
+  window.dimmerAddon = {};
   window.dimmerListener = makeDimmer(prefBranch.getIntPref('opacity'), window);
 
   window.dump('dimmer: loading listener\n');
@@ -14,6 +16,7 @@ function loadIntoWindow(window) {
      .addEventListener("DOMContentLoaded", window.dimmerListener, true);
   window.dimmerPrefObserver = makeObserver(window, makeDimmer);
   prefBranch.addObserver('', window.dimmerPrefObserver, false);
+  window.dimmerAddon.menuNoDim = makeDimmerMenuNoDim(window);
   window.dump('dimmer: loaded listener\n');
 }
 
@@ -25,6 +28,7 @@ function unloadFromWindow(window) {
   window.dimmerPrefObserver.unregister();
   window.gBrowser.removeEventListener("DOMContentLoaded",
        window.dimmerListener, true);
+  window.dimmerAddon.menuNoDim.unload(window);
   window.dump('dimmer: unloaded\n');
 }
 
@@ -51,6 +55,7 @@ function startup(aData, aReason) {
    wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
    Components.utils.import(modulePath + 'makeDimmer.js');
    Components.utils.import(modulePath + 'prefObserver.js');
+   Components.utils.import(modulePath + 'dimmerMenuNoDim.js');
    
   // Load into any existing windows
   enumerator = wm.getEnumerator("navigator:browser");
@@ -76,7 +81,7 @@ function shutdown(aData, aReason) {
   enumerator = wm.getEnumerator("navigator:browser");
   while (enumerator.hasMoreElements()) {
     win = enumerator.getNext().QueryInterface(Ci.nsIDOMWindow);
-    win.dump('unloading from window' + '\n');
+    win.dump('dimmer: unloading from window' + '\n');
     unloadFromWindow(win);
   }
    Components.utils.unload(modulePath + 'makeDimmer.js');
