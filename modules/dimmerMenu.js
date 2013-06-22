@@ -1,4 +1,4 @@
-/*global Components, NetUtil, FileUtils */
+/*global Components, NetUtil, FileUtils, PrivateBrowsingUtils */
 "use strict";
 var EXPORTED_SYMBOLS = ['makeDimmerMenu'];
 
@@ -14,8 +14,30 @@ function makeDimmerMenu(window) {
                 .get("ProfD", Components.interfaces.nsIFile);
   ret.configFile.append("dimmerAddonDomains.txt");
 
+  ret.isPrivateBrowsing = function() {
+    window.dump('hi\n');
+    try {
+      Components.utils
+        .import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+      return PrivateBrowsingUtils.isWindowPrivate(window);
+    } catch(e) {
+      // pre Firefox 20 (if you do not have access to a doc. 
+      // might use doc.hasAttribute("privatebrowsingmode") then instead)
+      try {
+        return Components
+          .classes["@mozilla.org/privatebrowsing;1"]
+          .getService(Components.interfaces.nsIPrivateBrowsingService)
+          .privateBrowsingEnabled;
+      } catch(err) {
+        Components.utils.reportError(err);
+        return;
+      }
+    }
+  };
+
   ret.writeToFile = function(data) {
     var ostream, converter, istream;
+    if (ret.isPrivateBrowsing()) { return; }
     ostream = FileUtils.openSafeFileOutputStream(ret.configFile);
     converter = Components
                .classes["@mozilla.org/intl/scriptableunicodeconverter"]
