@@ -4,18 +4,30 @@ var EXPORTED_SYMBOLS = ['makeDimmer'];
 
 function makeDimmer(opacity, window){
    return function(event) {
-      var doc, newDiv;
+      var doc, newDiv, win, doNotDim;
       doc = event.originalTarget;
+      win = window;
       if (!doc.body || doc.toString().indexOf('HTMLDocument') === -1) {
          return;
       }
-      if (doc.defaultView.frameElement){
-         doc = doc.defaultView.top.document;
+      if (win.frameElement){
+         win = win.top;
+         doc = win.document;
       }
+      if (win.dimmerAddon) {
+         doNotDim = (win.dimmerAddon
+                    .menu.config.nodim.indexOf(doc.location.host) > -1);
+      }else{
+         doNotDim = false;
+      }
+
       if (doc.getElementById("dimmerFFAddOn")) {
          doc.getElementById("dimmerFFAddOn").style
          .opacity = opacity / 10;
-      } else {
+         if (doNotDim) {
+            doc.removeElement(doc.getElementById("dimmerFFAddOn"));
+         }
+      } else if (!doNotDim){
          newDiv = doc.createElement('div');
          newDiv.id="dimmerFFAddOn";
          newDiv.style.width = '100%';

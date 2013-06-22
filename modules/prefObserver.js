@@ -19,20 +19,21 @@ function makeObserver(window, makeDimmer) {
       observe: function(aSubject, aTopic, aData) {
                   var opacity, dimmerListener;
                   switch (aData) {
-                     case "opacity":
-                        opacity = prefBranch.getIntPref('opacity');
-                        if (opacity < 0 || opacity > 10) {
-                           opacity = 0;
-                           prefBranch.setIntPref('opacity', 0);
-                        }
-                        window.gBrowser
-                        .removeEventListener("DOMContentLoaded",
-                        window.dimmerListener, true);
-                        window.dimmerListener = makeDimmer(opacity);
-                        window.gBrowser
-                        .addEventListener("DOMContentLoaded",
-                        window.dimmerListener, true);
-                        window.dump('dimmer: opacity ' + opacity + '\n');
+                  case "opacity":
+                     opacity = prefBranch.getIntPref('opacity');
+                     if (opacity < 0 || opacity > 10) {
+                        opacity = 0;
+                        prefBranch.setIntPref('opacity', 0);
+                     }
+                     window.gBrowser
+                     .removeEventListener("DOMContentLoaded",
+                     window.dimmerAddon.dimmerListener, true);
+                     window.dimmerAddon.dimmerListener = 
+                       makeDimmer(opacity, window);
+                     window.gBrowser
+                     .addEventListener("DOMContentLoaded",
+                     window.dimmerAddon.dimmerListener, true);
+                     window.dump('dimmer: opacity ' + opacity + '\n');
                      break;
                   }
                },

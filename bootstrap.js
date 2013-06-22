@@ -1,5 +1,5 @@
 /*global Components, APP_SHUTDOWN, makeDimmer, makeObserver,
-  prefBranch, makeDimmerMenuNoDim */
+  prefBranch, makeDimmerMenu */
 "use strict";
 var Cc = Components.classes;
 var Ci = Components.interfaces;
@@ -9,14 +9,16 @@ var modulePath = 'chrome://dimmer/content/modules/';
 function loadIntoWindow(window) {
   if (!window.document.getElementById("tabbrowser-tabs")) { return; }
   window.dimmerAddon = {};
-  window.dimmerListener = makeDimmer(prefBranch.getIntPref('opacity'), window);
+  window.dimmerAddon.dimmerListener = 
+     makeDimmer(prefBranch.getIntPref('opacity'), window);
 
   window.dump('dimmer: loading listener\n');
   window.gBrowser
-     .addEventListener("DOMContentLoaded", window.dimmerListener, true);
-  window.dimmerPrefObserver = makeObserver(window, makeDimmer);
-  prefBranch.addObserver('', window.dimmerPrefObserver, false);
-  window.dimmerAddon.menuNoDim = makeDimmerMenuNoDim(window);
+     .addEventListener("DOMContentLoaded", 
+      window.dimmerAddon.dimmerListener, true);
+  window.dimmerAddon.dimmerPrefObserver = makeObserver(window, makeDimmer);
+  prefBranch.addObserver('', window.dimmerAddon.dimmerPrefObserver, false);
+  window.dimmerAddon.menu = makeDimmerMenu(window);
   window.dump('dimmer: loaded listener\n');
 }
 
@@ -25,10 +27,11 @@ function unloadFromWindow(window) {
     window.dump('dimmer: window disappeared\n');
     return;
   }
-  window.dimmerPrefObserver.unregister();
+  window.dimmerAddon.dimmerPrefObserver.unregister();
   window.gBrowser.removeEventListener("DOMContentLoaded",
-       window.dimmerListener, true);
-  window.dimmerAddon.menuNoDim.unload(window);
+       window.dimmerAddon.dimmerListener, true);
+  window.dimmerAddon.menu.unload();
+  delete window.dimmerAddon;
   window.dump('dimmer: unloaded\n');
 }
 
@@ -55,7 +58,7 @@ function startup(aData, aReason) {
    wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
    Components.utils.import(modulePath + 'makeDimmer.js');
    Components.utils.import(modulePath + 'prefObserver.js');
-   Components.utils.import(modulePath + 'dimmerMenuNoDim.js');
+   Components.utils.import(modulePath + 'dimmerMenu.js');
    
   // Load into any existing windows
   enumerator = wm.getEnumerator("navigator:browser");
