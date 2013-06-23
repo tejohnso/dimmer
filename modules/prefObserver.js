@@ -38,7 +38,9 @@ function makeObserver(window, makeDimmer) {
                   }
                },
       unregister: function() {
-                     prefBranch.removeObserver("", prefObserver);
+                     prefBranch.removeObserver("", window.dimmerAddon
+                         .dimmerPrefObserver);
+                     delete window.dimmerAddon.dimmerPrefObserver;
                   }
    };
    return prefObserver;
