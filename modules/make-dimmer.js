@@ -3,30 +3,33 @@
 var EXPORTED_SYMBOLS = ['makeDimmer'];
 
 function makeDimmer(opacity, window){
-   return function(event) {
-      var doc, newDiv, win, doNotDim;
-      doc = event.originalTarget;
+   return function(event, doc) {
+      var newDiv, win, doNotDim, overlay;
       win = window;
+      if (!doc) {doc = win.gBrowser.contentDocument;}
+      if (win.frameElement){
+         win = win.top;
+         if (!doc) {doc = win.gBrowser.contentDocument;}
+      }
       if (!doc.body || doc.toString().indexOf('HTMLDocument') === -1) {
          return;
       }
-      if (win.frameElement){
-         win = win.top;
-         doc = win.document;
-      }
-      if (win.dimmerAddon) {
+      if (win.dimmerAddon && doc.location.protocol) {
          doNotDim = (win.dimmerAddon
                     .menu.config.nodim.indexOf(doc.location.host) > -1);
+         if (doc.location.protocol.substr(0,7) === 'chrome:') {
+           doNotDim = true;
+         }
       }else{
          doNotDim = false;
       }
-
-      if (doc.getElementById("dimmerFFAddOn")) {
-         doc.getElementById("dimmerFFAddOn").style
-         .opacity = opacity / 10;
-         if (doNotDim) {
-            doc.removeElement(doc.getElementById("dimmerFFAddOn"));
-         }
+      overlay = doc.getElementById("dimmerFFAddOn");
+      if (overlay) {
+        if (doNotDim) {
+          overlay.parentNode.removeChild(overlay);
+        } else {
+          overlay.style.opacity = opacity / 10;
+        }
       } else if (!doNotDim){
          newDiv = doc.createElement('div');
          newDiv.id="dimmerFFAddOn";

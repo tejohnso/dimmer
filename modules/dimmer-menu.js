@@ -1,24 +1,23 @@
 /*global Components, NetUtil, FileUtils, PrivateBrowsingUtils */
 "use strict";
-var EXPORTED_SYMBOLS = ['makeDimmerMenu'];
+var EXPORTED_SYMBOLS = ['makeDimmerMenu','unloadMenuImports'];
+  Components.utils.import("resource://gre/modules/NetUtil.jsm");
+  Components.utils.import("resource://gre/modules/FileUtils.jsm");
+  Components.utils
+        .import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 
 function makeDimmerMenu(window) {
   if (!window.document.getElementById("contentAreaContextMenu")) { return; }
   var ret = {};
   ret.parentElement = window.document.getElementById("contentAreaContextMenu");
 
-  Components.utils.import("resource://gre/modules/NetUtil.jsm");
-  Components.utils.import("resource://gre/modules/FileUtils.jsm");
   ret.configFile = Components.classes["@mozilla.org/file/directory_service;1"]
                 .getService(Components.interfaces.nsIProperties)
                 .get("ProfD", Components.interfaces.nsIFile);
   ret.configFile.append("dimmerAddonDomains.txt");
 
   ret.isPrivateBrowsing = function() {
-    window.dump('hi\n');
     try {
-      Components.utils
-        .import("resource://gre/modules/PrivateBrowsingUtils.jsm");
       return PrivateBrowsingUtils.isWindowPrivate(window);
     } catch(e) {
       // pre Firefox 20 (if you do not have access to a doc. 
@@ -35,7 +34,7 @@ function makeDimmerMenu(window) {
     }
   };
 
-  ret.writeToFile = function(data) {
+  ret.writeToFile = function(data, cb) {
     var ostream, converter, istream;
     if (ret.isPrivateBrowsing()) { return; }
     ostream = FileUtils.openSafeFileOutputStream(ret.configFile);
@@ -45,7 +44,7 @@ function makeDimmerMenu(window) {
                .interfaces.nsIScriptableUnicodeConverter);
     converter.charset = "UTF-8";
     istream = converter.convertToInputStream(data);
-    NetUtil.asyncCopy(istream, ostream);
+    NetUtil.asyncCopy(istream, ostream, cb);
   };
 
   ret.readConfig = function() {
@@ -70,18 +69,21 @@ function makeDimmerMenu(window) {
         } else {
            ret.config.nodim.splice(ret.config.nodim.indexOf(host), 1);
         }
-        ret.writeToFile(JSON.stringify(ret.config));
+        ret.writeToFile(JSON.stringify(ret.config), function() {
+          window.dimmerAddon.dimmerListener();
+        });
      } catch(e){}
   };
 
-  ret.unload = function () {
+  ret.unloadFromWindow = function (window) {
      this.parentElement.removeChild(this.dimmerMenuSeparator);
      this.dimmerMenuToggleDim
-        .removeEventListener("command", this.toggleDim, true);
+        .removeEventListener("command", ret.toggleDim, true);
      this.parentElement.removeChild(this.dimmerMenu);
      window.removeEventListener("contextmenu", ret.setLabel);
      window.removeEventListener("activate", ret.readConfig);
   };
+
   
   ret.setLabel = function(){
      var host = window.gBrowser.contentDocument.location.host; 
@@ -120,6 +122,13 @@ function makeDimmerMenu(window) {
   ret.parentElement.appendChild(ret.dimmerMenu);
 
   return ret;
+}
+
+function unloadMenuImports() {
+  Components.utils.unload("resource://gre/modules/NetUtil.jsm");
+  Components.utils.unload("resource://gre/modules/FileUtils.jsm");
+  Components.utils
+        .unload("resource://gre/modules/PrivateBrowsingUtils.jsm");
 }
 
 /*  ret.openEditor = function () {
