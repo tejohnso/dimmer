@@ -61,7 +61,7 @@ function makeDimmerMenu(window) {
   };
 
   ret.toggleDim = function () {
-     var host = "";
+     var host, i, tabs;
      try{
         host = window.gBrowser.currentURI.host;
         if (ret.config.nodim.indexOf(host) === -1) {
@@ -70,7 +70,12 @@ function makeDimmerMenu(window) {
            ret.config.nodim.splice(ret.config.nodim.indexOf(host), 1);
         }
         ret.writeToFile(JSON.stringify(ret.config), function() {
-          window.dimmerAddon.dimmerListener();
+          for (i = 0,
+               tabs = window.gBrowser.browsers.length;
+               i < tabs; i += 1) {
+            window.dimmerAddon.dimmerListener(null,
+              window.gBrowser.getBrowserAtIndex(i).contentDocument);
+          }
         });
      } catch(e){}
   };
