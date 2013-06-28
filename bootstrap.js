@@ -18,7 +18,7 @@ function loadIntoWindow(window) {
   window.dimmerAddon.prefBranch.addObserver('', 
       window.dimmerAddon.dimmerPrefObserver, false);
   window.dimmerAddon.menu = makeDimmerMenu(window);
-  window.dimmerAddon.menu.readConfig(function() {
+  window.dimmerAddon.menu.readConfig(null, function() {
     for (i = 0,
          tabs = window.gBrowser.browsers.length;
          i < tabs; i += 1) {
@@ -30,6 +30,7 @@ function loadIntoWindow(window) {
 }
 
 function unloadFromWindow(window) {
+  var tabs, i, overlay;
   if (!window) {
     return;
   }
@@ -39,6 +40,14 @@ function unloadFromWindow(window) {
   window.gBrowser.removeEventListener("DOMContentLoaded",
        window.dimmerAddon.dimmerListener, true);
   window.dimmerAddon.menu.unloadFromWindow(window);
+  for (i = 0,
+       tabs = window.gBrowser.browsers.length;
+       i < tabs; i += 1) {
+    overlay = window.gBrowser.getBrowserAtIndex(i).contentDocument
+      .getElementById("dimmerFFAddOn");
+    if (overlay) {overlay.parentNode.removeChild(overlay);}
+    window.dump('dimmer: unloaded listener\n');
+  }
   delete window.dimmerAddon;
   window.dump('dimmer: unloaded\n');
   }catch(e){window.dump(e);}
