@@ -47,16 +47,20 @@ function makeDimmerMenu(window) {
     NetUtil.asyncCopy(istream, ostream, cb);
   };
 
-  ret.readConfig = function() {
+  ret.readConfig = function(cb) {
      window.dump('dimmer: reading config\n');
      NetUtil.asyncFetch(ret.configFile, function(inputStream, status) {
         if (!Components.isSuccessCode(status)) {
            window.dump('dimmer: file read error\n');
            ret.writeToFile('{"nodim":[]}');
+           ret.config = {"nodim":[]};
+           window.dump('dimmer: config initialized\n');
+           cb();
            return;
         }
         ret.config = JSON.parse(NetUtil
                .readInputStreamToString(inputStream, inputStream.available()));
+        cb();
      });
   };
 

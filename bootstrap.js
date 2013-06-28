@@ -7,20 +7,26 @@ var Ci = Components.interfaces;
 var modulePath = 'chrome://dimmer/content/modules/';
 
 function loadIntoWindow(window) {
+  var i, tabs;
   if (!window.document.getElementById("tabbrowser-tabs")) { return; }
   window.dimmerAddon = {};
   window.dimmerAddon.dimmerPrefObserver = makeObserver(window, makeDimmer);
   window.dimmerAddon.dimmerListener = 
      makeDimmer(window.dimmerAddon.prefBranch.getIntPref('opacity'), window);
-
-  window.dump('dimmer: loading listener\n');
   window.gBrowser.addEventListener("DOMContentLoaded", 
     window.dimmerAddon.dimmerListener, true);
   window.dimmerAddon.prefBranch.addObserver('', 
       window.dimmerAddon.dimmerPrefObserver, false);
   window.dimmerAddon.menu = makeDimmerMenu(window);
-  window.dimmerAddon.menu.readConfig();
-  window.dump('dimmer: loaded listener\n');
+  window.dimmerAddon.menu.readConfig(function() {
+    for (i = 0,
+         tabs = window.gBrowser.browsers.length;
+         i < tabs; i += 1) {
+      window.dimmerAddon.dimmerListener(null,
+             window.gBrowser.getBrowserAtIndex(i).contentDocument);
+      window.dump('dimmer: loaded listener\n');
+    }
+  });
 }
 
 function unloadFromWindow(window) {
