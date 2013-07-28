@@ -149,12 +149,3 @@ function unloadMenuImports() {
   Components.utils.unload("resource://gre/modules/FileUtils.jsm");
   Components.utils.unload("resource://gre/modules/PrivateBrowsingUtils.jsm");
 }
-
-/*  ret.openEditor = function () {
-     var editorTab;
-     editorTab = window.gBrowser.getBrowserForTab(window.gBrowser.addTab('file:///home/tyler/.mozilla/firefox/m31kthv4.default/dimmerAddon.config'));
-     editorTab.addEventListener("load", function () {
-          editorTab.contentDocument.designMode = 'on';
-     }, true);
-  };*/
-

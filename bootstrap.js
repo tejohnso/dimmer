@@ -105,10 +105,10 @@ function shutdown(aData, aReason) {
   try {
     Components.utils.unload(modulePath + 'pref-observer.js');
     Components.utils.unload(modulePath + 'make-dimmer.js');
-    unloadMenuImports();
+//    unloadMenuImports();  this is not required - causes harm
     Components.utils.unload(modulePath + 'dimmer-menu.js');
   } catch(err) {
-    Components.utils.reportError('dimmer: shutdown error - ' + err);
+    win.dump('dimmer: unloading error - ' + err);
     return;
   }
 }
