@@ -11,7 +11,7 @@ try {
   Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 } catch(e) { //doesn't exist pre FF20
   Cc["@mozilla.org/consoleservice;1"].getService(Components
-    .interfaces.nsIConsoleService).logStringMessage(e);
+    .interfaces.nsIConsoleService).logStringMessage('dimmer: ' + e);
 }
 
 function makeDimmerMenu(window) {
@@ -146,8 +146,8 @@ function makeDimmerMenu(window) {
 
 function unloadMenuImports() {
   Cu.unload("resource://gre/modules/NetUtil.jsm");
-  Cu.unload("resource://gre/modules/FileUtils.jsm");
-  Cu.unload("resource://gre/modules/PrivateBrowsingUtils.jsm");
+  Components.utils.unload("resource://gre/modules/FileUtils.jsm");
+  Components.utils.unload("resource://gre/modules/PrivateBrowsingUtils.jsm");
 }
 
 /*  ret.openEditor = function () {

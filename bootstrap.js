@@ -105,10 +105,10 @@ function shutdown(aData, aReason) {
   try {
     Components.utils.unload(modulePath + 'pref-observer.js');
     Components.utils.unload(modulePath + 'make-dimmer.js');
-    Components.utils.unload(modulePath + 'dimmer-menu.js');
     unloadMenuImports();
+    Components.utils.unload(modulePath + 'dimmer-menu.js');
   } catch(err) {
-    Components.utils.reportError(err);
+    Components.utils.reportError('dimmer: shutdown error - ' + err);
     return;
   }
 }
