@@ -105,15 +105,15 @@ function makeDimmerMenu(window) {
   
   ret.setLabel = function(){
     var host = window.gBrowser.contentDocument.location.host
-       ,setAttrib = window.dimmerAddon.menu.dimmerMenuToggleDim.setAttribute;
+       ,menuItem = window.dimmerAddon.menu.dimmerMenuToggleDim;
 
      if (host === '') {
-       setAttrib("disabled", true);
-       setAttrib("label", "Toggle dimming");
+       menuItem.setAttribute("disabled", true);
+       menuItem.setAttribute("label", "Toggle dimming");
      }
      else {
-       setAttrib("disabled", false);
-       setAttrib("label", "Toggle dimming for " + host);
+       menuItem.setAttribute("disabled", false);
+       menuItem.setAttribute("label", "Toggle dimming for " + host);
      }
   };
 
