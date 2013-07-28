@@ -1,10 +1,18 @@
 /*global Components, NetUtil, FileUtils, PrivateBrowsingUtils */
 "use strict";
-var EXPORTED_SYMBOLS = ['makeDimmerMenu','unloadMenuImports'];
-  Components.utils.import("resource://gre/modules/NetUtil.jsm");
-  Components.utils.import("resource://gre/modules/FileUtils.jsm");
-  Components.utils
-        .import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+var EXPORTED_SYMBOLS = ['makeDimmerMenu','unloadMenuImports']
+   ,Cu = Components.utils
+   ,Cc = Components.classes;
+
+Cu.import("resource://gre/modules/NetUtil.jsm");
+Cu.import("resource://gre/modules/FileUtils.jsm");
+
+try {
+  Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+} catch(e) { //doesn't exist pre FF20
+  Cc["@mozilla.org/consoleservice;1"].getService(Components
+    .interfaces.nsIConsoleService).logStringMessage(e);
+}
 
 function makeDimmerMenu(window) {
   if (!window.document.getElementById("contentAreaContextMenu")) { return; }
@@ -96,14 +104,16 @@ function makeDimmerMenu(window) {
 
   
   ret.setLabel = function(){
-     var host = window.gBrowser.contentDocument.location.host; 
+    var host = window.gBrowser.contentDocument.location.host
+       ,setAttrib = window.dimmerAddon.menu.dimmerMenuToggleDim.setAttribute;
+
      if (host === '') {
-        window.dimmerAddon.menu.dimmerMenuToggleDim.setAttribute("disabled", true);
-        window.dimmerAddon.menu.dimmerMenuToggleDim.setAttribute("label", "Toggle dimming");
+       setAttrib("disabled", true);
+       setAttrib("label", "Toggle dimming");
      }
      else {
-        window.dimmerAddon.menu.dimmerMenuToggleDim.setAttribute("disabled", false);
-        window.dimmerAddon.menu.dimmerMenuToggleDim.setAttribute("label", "Toggle dimming for " + window.gBrowser.contentDocument.location.host);
+       setAttrib("disabled", false);
+       setAttrib("label", "Toggle dimming for " + host);
      }
   };
 
@@ -135,10 +145,9 @@ function makeDimmerMenu(window) {
 }
 
 function unloadMenuImports() {
-  Components.utils.unload("resource://gre/modules/NetUtil.jsm");
-  Components.utils.unload("resource://gre/modules/FileUtils.jsm");
-  Components.utils
-        .unload("resource://gre/modules/PrivateBrowsingUtils.jsm");
+  Cu.unload("resource://gre/modules/NetUtil.jsm");
+  Cu.unload("resource://gre/modules/FileUtils.jsm");
+  Cu.unload("resource://gre/modules/PrivateBrowsingUtils.jsm");
 }
 
 /*  ret.openEditor = function () {
