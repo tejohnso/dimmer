@@ -2,7 +2,7 @@
 "use strict";
 var EXPORTED_SYMBOLS = ['makeObserver'];
 
-function makeObserver(window, makeDimmer) {
+function makeObserver(window) {
   window.dimmerAddon.prefBranch = Components
                  .classes["@mozilla.org/preferences-service;1"]
                  .getService(Components.interfaces.nsIPrefService)
@@ -13,6 +13,11 @@ function makeObserver(window, makeDimmer) {
                 .getDefaultBranch("extensions.dimmer.");
 
   window.dimmerAddon.defBranch.setIntPref('opacity', 4);
+  window.dimmerAddon.opacity = window.dimmerAddon.prefBranch
+                                     .getIntPref('opacity');
+  window.dimmerAddon.defBranch.setBoolPref('defaultBehaviour', true);
+  window.dimmerAddon.defaultBehaviour = window.dimmerAddon.prefBranch
+                                              .getBoolPref('defaultBehaviour');
    var prefObserver = {
       observe: function(aSubject, aTopic, aData) {
                   var opacity, dimmerListener, i, tabs;
@@ -24,14 +29,7 @@ function makeObserver(window, makeDimmer) {
                         opacity = 0;
                         window.dimmerAddon.prefBranch.setIntPref('opacity', 0);
                      }
-                     window.gBrowser
-                     .removeEventListener("DOMContentLoaded",
-                     window.dimmerAddon.dimmerListener, true);
-                     window.dimmerAddon.dimmerListener = 
-                       makeDimmer(opacity, window);
-                     window.gBrowser
-                       .addEventListener("DOMContentLoaded",
-                       window.dimmerAddon.dimmerListener, true);
+                     window.dimmerAddon.opacity = opacity;
                      window.dump('dimmer: opacity ' + opacity + '\n');
                      for (i = 0,
                          tabs = window.gBrowser.browsers.length;
@@ -40,6 +38,16 @@ function makeObserver(window, makeDimmer) {
                            window.gBrowser.getBrowserAtIndex(i).contentDocument);
                      }
                      break;
+                  case "defaultBehaviour":
+                    window.dimmerAddon.defaultBehaviour = window.dimmerAddon
+                          .prefBranch.getBoolPref('defaultBehaviour');
+                     for (i = 0,
+                         tabs = window.gBrowser.browsers.length;
+                         i < tabs; i += 1) {
+                       window.dimmerAddon.dimmerListener(null,
+                           window.gBrowser.getBrowserAtIndex(i).contentDocument);
+                     }
+                    break;
                   }
                },
       unregister: function(window) {

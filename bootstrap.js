@@ -10,9 +10,8 @@ function loadIntoWindow(window) {
   var i, tabs;
   if (!window.document.getElementById("tabbrowser-tabs")) { return; }
   window.dimmerAddon = {};
-  window.dimmerAddon.dimmerPrefObserver = makeObserver(window, makeDimmer);
-  window.dimmerAddon.dimmerListener = 
-     makeDimmer(window.dimmerAddon.prefBranch.getIntPref('opacity'), window);
+  window.dimmerAddon.dimmerPrefObserver = makeObserver(window);
+  window.dimmerAddon.dimmerListener = makeDimmer(window);
   window.gBrowser.addEventListener("DOMContentLoaded", 
     window.dimmerAddon.dimmerListener, true);
   window.dimmerAddon.prefBranch.addObserver('', 

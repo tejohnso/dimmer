@@ -60,14 +60,16 @@ function makeDimmerMenu(window) {
      NetUtil.asyncFetch(ret.configFile, function(inputStream, status) {
         if (!Components.isSuccessCode(status)) {
            window.dump('dimmer: file read error\n');
-           ret.writeToFile('{"nodim":[]}');
-           ret.config = {"nodim":[]};
+           ret.writeToFile('{"nodim":[], "dim":[]}');
+           ret.config = {"nodim":[], "dim":[]};
            window.dump('dimmer: config initialized\n');
            if (cb) {cb();}
            return;
         }
         ret.config = JSON.parse(NetUtil
                .readInputStreamToString(inputStream, inputStream.available()));
+        ret.config.dim = (ret.config.dim || []);
+        ret.config.nodim = (ret.config.nodim || []);
         if (cb) {cb();}
         window.dump('dimmer: config loaded\n');
      });
@@ -77,10 +79,16 @@ function makeDimmerMenu(window) {
      var host, i, tabs;
      try{
         host = window.gBrowser.currentURI.host;
-        if (ret.config.nodim.indexOf(host) === -1) {
+        if (window.gBrowser.contentDocument.getElementById('dimmerFFAddOn')) {
            ret.config.nodim.push(host);
+           if (ret.config.dim.indexOf(host) !== -1) {
+             ret.config.dim.splice(ret.config.dim.indexOf(host), 1);
+           }
         } else {
            ret.config.nodim.splice(ret.config.nodim.indexOf(host), 1);
+           if (ret.config.dim.indexOf(host) === -1) {
+             ret.config.dim.push(host);
+           }
         }
         ret.writeToFile(JSON.stringify(ret.config), function() {
           for (i = 0,

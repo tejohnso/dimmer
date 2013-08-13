@@ -2,9 +2,9 @@
 "use strict";
 var EXPORTED_SYMBOLS = ['makeDimmer'];
 
-function makeDimmer(opacity, window){
+function makeDimmer(window){
    return function(event, doc) {
-      var newDiv, win, doNotDim, overlay;
+      var newDiv, win, allowDim, overlay, opacity;
       win = window;
       if (!doc) {doc = win.gBrowser.contentDocument;}
       if (win.frameElement){
@@ -14,23 +14,27 @@ function makeDimmer(opacity, window){
       if (!doc.body || doc.toString().indexOf('HTMLDocument') === -1) {
          return;
       }
+      allowDim = win.dimmerAddon.defaultBehaviour;
+      opacity = win.dimmerAddon.opacity;
       if (win.dimmerAddon && doc.location.protocol) {
-         doNotDim = (win.dimmerAddon
-                    .menu.config.nodim.indexOf(doc.location.host) > -1);
          if (doc.location.protocol.substr(0,7) === 'chrome:') {
-           doNotDim = true;
+           allowDim = false;
+         } else if (allowDim) {
+           allowDim = (win.dimmerAddon
+                          .menu.config.nodim.indexOf(doc.location.host) === -1);
+         } else {
+           allowDim = (win.dimmerAddon
+                          .menu.config.dim.indexOf(doc.location.host) !== -1);
          }
-      }else{
-         doNotDim = false;
       }
       overlay = doc.getElementById("dimmerFFAddOn");
       if (overlay) {
-        if (doNotDim) {
-          overlay.parentNode.removeChild(overlay);
-        } else {
+        if (allowDim) {
           overlay.style.opacity = opacity / 10;
+        } else {
+          overlay.parentNode.removeChild(overlay);
         }
-      } else if (!doNotDim){
+      } else if (allowDim){
          newDiv = doc.createElement('div');
          newDiv.id="dimmerFFAddOn";
          newDiv.style.width = '100%';
